@@ -11,14 +11,14 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
 
     private boolean running = true;
     private List<String> printerQue = new ArrayList<>();
-    public ArrayList<queList> printerQueClass = new ArrayList<queList>();
+//    public ArrayList<queList> printerQueClass = new ArrayList<queList>();
     private NumberFormat formatter = new DecimalFormat("0000");
 
     protected PrinterServant() throws RemoteException {
         super();
     }
 
-    static class queList {
+/*    static class queList {
         String jobNumber;
         String fileName;
 
@@ -26,29 +26,29 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
             this.jobNumber = jobNumber;
             this.fileName = fileName;
         }
-    }
+    }*/
 
     @Override
     public String print(String filename, String printer) throws RemoteException {
         if (running) {
             String jobNumber = formatter.format(printerQue.size() + 1);
-            printerQueClass.add(new queList(jobNumber, filename));
-//            printerQue.add("<" + jobNumber + "> " + "<" + filename + ">");
+//            printerQueClass.add(new queList(jobNumber, filename));
+            printerQue.add("<" + jobNumber + "> " + "<" + filename + ">");
             return "Printing file: " + filename + " on printer: " + printer;
         } else {
             return "Printer not running";
         }
     }
 
-/*    @Override
+    @Override
     public List<String> queue() throws RemoteException {
         return printerQue;
-    }*/
+    }
 
-    @Override
+/*    @Override
     public ArrayList<queList> queue() throws RemoteException {
         return printerQueClass;
-    }
+    }*/
 
     @Override
     public void topQueue(int job) throws RemoteException {

@@ -2,12 +2,12 @@ package authlab;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
+import java.util.List;
 
 public interface PrinterInterface extends Remote {
 
     public String print (String filename, String printer) throws RemoteException;
-    public ArrayList<PrinterServant.queList> queue() throws RemoteException;
+    public List<String> queue() throws RemoteException;
     public void topQueue(int job) throws RemoteException;
     public String start() throws RemoteException;
     public String stop() throws RemoteException;
