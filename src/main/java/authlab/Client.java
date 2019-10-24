@@ -1,11 +1,17 @@
 package authlab;
 
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.rmi.MarshalException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
 import java.util.Scanner;
 
 public class Client
@@ -14,14 +20,25 @@ public class Client
         PrinterInterface service = (PrinterInterface) Naming.lookup("rmi://localhost:5099/printerTest");
         Scanner myScanner = new Scanner(System.in);
 
+        // defining the salt for the hashing
+        SecureRandom random = new SecureRandom();
+        byte[] salt = new byte[16];
+        random.nextBytes(salt);
+
         while (true) {
             System.out.println("Enter Username");
             String username = myScanner.nextLine();
             System.out.println("Enter password");
             String password = myScanner.nextLine();
             try {
+/*                KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 65536, 128);
+                SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+                byte[] hashedPassword = factory.generateSecret(spec).getEncoded();*/
+
                 if(service.login(username, password) == 1) {
                     break;
+                } else {
+                    System.out.println("Wrong username or password, try again");
                 }
             } catch (FileNotFoundException e) {
                 System.out.println(e);
@@ -72,7 +89,7 @@ public class Client
                     break;
                 case "readconfig":
 //                    service.readConfig();
-                    System.out.println("tba");
+                    System.out.println(service.readConfig("lol"));
                     break;
                 case "setconfig":
 //                    service.setConfig();

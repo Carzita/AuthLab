@@ -17,6 +17,7 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
 //    public ArrayList<queList> printerQueClass = new ArrayList<queList>();
     private NumberFormat formatter = new DecimalFormat("0000");
 
+
     protected PrinterServant() throws RemoteException {
         super();
     }
@@ -94,7 +95,7 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
 
     @Override
     public String readConfig(String parameter) throws RemoteException {
-        return "lol";
+        return ("Working Directory = " + System.getProperty("user.dir"));
     }
 
     @Override
@@ -121,15 +122,26 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
         try {
             FileReader fileReader = new FileReader("users.txt");
             BufferedReader bufReader = new BufferedReader(fileReader);
-            String currentLine, compare;
+            String currentLine, compare, compare2;
+            int index, lastIndex;
             int match = 0;
 
             while((currentLine = bufReader.readLine()) != null && match != 1) {
-                int index = currentLine.indexOf(",");
+                index = currentLine.indexOf(",");
                 compare = currentLine.substring(0,index);
+                System.out.println("username from file: " + compare);
                 if(compare.equals(username)) {
-                    match = 1;
+                    lastIndex = currentLine.length();
+                    compare2 = currentLine.substring(index+1, lastIndex);
+                    System.out.println("password from file: " + compare2);
+                    if(compare2.equals(password)) {
+                        match = 1;
+                    } else {
+                        System.out.println("wrong password");
+                        match = 0;
+                    }
                 } else {
+                    System.out.println("wrong username");
                     match = 0;
                 }
             }
