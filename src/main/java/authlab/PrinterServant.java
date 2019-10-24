@@ -1,5 +1,8 @@
 package authlab;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.text.DecimalFormat;
@@ -114,9 +117,29 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
     }
 
     @Override
-    public boolean login(String username, String password) throws RemoteException {
-        return true;
-    }
+    public int login(String username, String password) throws RemoteException, FileNotFoundException {
+        try {
+            FileReader fileReader = new FileReader("users.txt");
+            BufferedReader bufReader = new BufferedReader(fileReader);
+            String currentLine, compare;
+            int match = 0;
 
+            while((currentLine = bufReader.readLine()) != null && match != 1) {
+                int index = currentLine.indexOf(",");
+                compare = currentLine.substring(0,index);
+                if(compare.equals(username)) {
+                    match = 1;
+                } else {
+                    match = 0;
+                }
+            }
+            fileReader.close();
+            return match;
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return 0;
+    }
 
 }

@@ -1,5 +1,6 @@
 package authlab;
 
+import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.rmi.MarshalException;
 import java.rmi.Naming;
@@ -13,15 +14,19 @@ public class Client
         PrinterInterface service = (PrinterInterface) Naming.lookup("rmi://localhost:5099/printerTest");
         Scanner myScanner = new Scanner(System.in);
 
-/*        while (true) {
+        while (true) {
             System.out.println("Enter Username");
             String username = myScanner.nextLine();
             System.out.println("Enter password");
             String password = myScanner.nextLine();
-            if(service.login(username, password)) {
-                break;
+            try {
+                if(service.login(username, password) == 1) {
+                    break;
+                }
+            } catch (FileNotFoundException e) {
+                System.out.println(e);
             }
-        }*/
+        }
 
         loop: while (true) {
             System.out.println("Enter command, enter help for a list over commands");

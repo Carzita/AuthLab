@@ -1,5 +1,6 @@
 package authlab;
 
+import java.io.FileNotFoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
@@ -16,6 +17,6 @@ public interface PrinterInterface extends Remote {
     public String readConfig(String parameter) throws RemoteException;
     public void setConfig(String parameter, String value) throws RemoteException;
     public String helpCommand() throws RemoteException;
-    public boolean login (String username, String password) throws  RemoteException;
+    public int login (String username, String password) throws RemoteException, FileNotFoundException;
 
 }
