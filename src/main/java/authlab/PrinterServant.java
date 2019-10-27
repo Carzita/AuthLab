@@ -1,20 +1,25 @@
 package authlab;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import java.io.*;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 
 public class PrinterServant extends UnicastRemoteObject implements PrinterInterface {
 
     private boolean running = true;
     private List<String> printerQue = new ArrayList<>();
-//    public ArrayList<queList> printerQueClass = new ArrayList<queList>();
+    //    public ArrayList<queList> printerQueClass = new ArrayList<queList>();
     private NumberFormat formatter = new DecimalFormat("0000");
 
 
@@ -33,7 +38,7 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
     }*/
 
     @Override
-    public String print(String filename, String printer) throws RemoteException {
+    public String print(String filename, String printer) {
         if (running) {
             String jobNumber = formatter.format(printerQue.size() + 1);
 //            printerQueClass.add(new queList(jobNumber, filename));
@@ -45,7 +50,7 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
     }
 
     @Override
-    public List<String> queue() throws RemoteException {
+    public List<String> queue() {
         return printerQue;
     }
 
@@ -55,12 +60,12 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
     }*/
 
     @Override
-    public void topQueue(int job) throws RemoteException {
+    public void topQueue(int job) {
 //        printerQue.add(0, job );
     }
 
     @Override
-    public String start() throws RemoteException {
+    public String start() {
         if(!running) {
             running = true;
             System.out.println("Printer starting");
@@ -72,7 +77,7 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
     }
 
     @Override
-    public String stop() throws RemoteException {
+    public String stop() {
         if(running) {
             running = false;
             System.out.println("Printer stopping");
@@ -84,27 +89,27 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
     }
 
     @Override
-    public void restart() throws RemoteException {
+    public void restart() {
         printerQue.clear();
     }
 
     @Override
-    public String status() throws RemoteException {
+    public String status() {
         return "Running status: " + running;
     }
 
     @Override
-    public String readConfig(String parameter) throws RemoteException {
+    public String readConfig(String parameter) {
         return ("Working Directory = " + System.getProperty("user.dir"));
     }
 
     @Override
-    public void setConfig(String parameter, String value) throws RemoteException {
+    public void setConfig(String parameter, String value) {
 
     }
 
     @Override
-    public String helpCommand() throws RemoteException {
+    public String helpCommand() {
         return "List over commands:" +
                 "\nPrint" +
                 "\nQueue" +
@@ -118,23 +123,40 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
     }
 
     @Override
-    public int login(String username, String password) throws RemoteException, FileNotFoundException {
+    public byte[] convertAttemptedPassword(String password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 65536, 128);
+        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+        return factory.generateSecret(spec).getEncoded();
+    }
+
+
+    @Override
+    public int login(String username, String attemptedPassword) {
         try {
             FileReader fileReader = new FileReader("users.txt");
             BufferedReader bufReader = new BufferedReader(fileReader);
-            String currentLine, compare, compare2;
-            int index, lastIndex;
-            int match = 0;
+            String currentLine, compareUsername, saltString, comparePW;
+            int match, indexUsername, indexSalt, lastIndex;
+            match = 0;
 
             while((currentLine = bufReader.readLine()) != null && match != 1) {
-                index = currentLine.indexOf(",");
-                compare = currentLine.substring(0,index);
-                System.out.println("username from file: " + compare);
-                if(compare.equals(username)) {
+                indexUsername = currentLine.indexOf(",");
+                compareUsername = currentLine.substring(0,indexUsername);
+                if(compareUsername.equals(username)) {
+
+                    // defining indexes to get the data from the file and getting the data
+                    indexSalt = currentLine.indexOf(";");
                     lastIndex = currentLine.length();
-                    compare2 = currentLine.substring(index+1, lastIndex);
-                    System.out.println("password from file: " + compare2);
-                    if(compare2.equals(password)) {
+                    saltString = currentLine.substring(indexUsername+1, indexSalt);
+                    comparePW = currentLine.substring(indexSalt+1, lastIndex);
+
+                    // converting the strings into byte arrays for comparison
+                    byte[] PWByte = Base64.getDecoder().decode(comparePW);
+                    byte[] saltConverted = Base64.getDecoder().decode(saltString);
+                    byte[] attPWByte = convertAttemptedPassword(attemptedPassword, saltConverted);
+
+                    // check for match
+                    if(Arrays.equals(attPWByte, PWByte)) {
                         match = 1;
                     } else {
                         System.out.println("wrong password");
@@ -147,7 +169,6 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
             }
             fileReader.close();
             return match;
-
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }

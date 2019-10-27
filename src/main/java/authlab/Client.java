@@ -20,20 +20,12 @@ public class Client
         PrinterInterface service = (PrinterInterface) Naming.lookup("rmi://localhost:5099/printerTest");
         Scanner myScanner = new Scanner(System.in);
 
-        // defining the salt for the hashing
-        SecureRandom random = new SecureRandom();
-        byte[] salt = new byte[16];
-        random.nextBytes(salt);
-
         while (true) {
             System.out.println("Enter Username");
             String username = myScanner.nextLine();
             System.out.println("Enter password");
             String password = myScanner.nextLine();
             try {
-/*                KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 65536, 128);
-                SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-                byte[] hashedPassword = factory.generateSecret(spec).getEncoded();*/
 
                 if(service.login(username, password) == 1) {
                     break;

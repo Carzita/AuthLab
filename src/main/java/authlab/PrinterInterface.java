@@ -3,6 +3,8 @@ package authlab;
 import java.io.FileNotFoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 
 public interface PrinterInterface extends Remote {
@@ -17,6 +19,7 @@ public interface PrinterInterface extends Remote {
     public String readConfig(String parameter) throws RemoteException;
     public void setConfig(String parameter, String value) throws RemoteException;
     public String helpCommand() throws RemoteException;
-    public int login (String username, String password) throws RemoteException, FileNotFoundException;
+    public byte[] convertAttemptedPassword (String password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException, RemoteException;
+    public int login (String username, String attemptedPassword) throws RemoteException, FileNotFoundException;
 
 }
