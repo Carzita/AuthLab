@@ -1,8 +1,12 @@
 package authlab;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.NoSuchAlgorithmException;
@@ -21,6 +25,8 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
     private List<String> printerQue = new ArrayList<>();
     //    public ArrayList<queList> printerQueClass = new ArrayList<queList>();
     private NumberFormat formatter = new DecimalFormat("0000");
+
+    // initializing values to decrypt / encrypt strings passed between client and server
 
 
     protected PrinterServant() throws RemoteException {
@@ -131,33 +137,53 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
 
 
     @Override
-    public int login(String username, String attemptedPassword) {
+    public int login(byte[] usernameEncypted, byte[] attemptedPassword) {
         try {
+            // declaring
+            String staticSharedKey, currentLine, compareUsername, saltString, comparePW, usernameClear, PWClear;
+            int match = 0, indexUsername, indexSalt, lastIndex;
+            byte[] decodedKeyByte, usernameDecryptedByte, PWDecryptedByte, PWByte, saltConvertedByte, attPWByte;
+
             FileReader fileReader = new FileReader("users.txt");
             BufferedReader bufReader = new BufferedReader(fileReader);
-            String currentLine, compareUsername, saltString, comparePW;
-            int match, indexUsername, indexSalt, lastIndex;
-            match = 0;
+
+            // initializing cipher values
+            staticSharedKey = "XupwNQ3MFPcj/F/S1KOpDA==";
+            // decode the base64 encoded string
+            decodedKeyByte = Base64.getDecoder().decode(staticSharedKey);
+            // build key using SecretKeySpec
+            SecretKey aesKey = new SecretKeySpec(decodedKeyByte, 0, decodedKeyByte.length, "AES");
+            Cipher aesCipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+            aesCipher.init(Cipher.DECRYPT_MODE, aesKey);
 
             while((currentLine = bufReader.readLine()) != null && match != 1) {
                 indexUsername = currentLine.indexOf(",");
                 compareUsername = currentLine.substring(0,indexUsername);
-                if(compareUsername.equals(username)) {
 
+                // decrypting username received from client and converting it to a string
+                usernameDecryptedByte = aesCipher.doFinal(usernameEncypted);
+                usernameClear = new String(usernameDecryptedByte, StandardCharsets.UTF_8);
+
+                if(compareUsername.equals(usernameClear)) {
                     // defining indexes to get the data from the file and getting the data
                     indexSalt = currentLine.indexOf(";");
                     lastIndex = currentLine.length();
                     saltString = currentLine.substring(indexUsername+1, indexSalt);
                     comparePW = currentLine.substring(indexSalt+1, lastIndex);
 
+                    // decrypting password received from client and converting it to a string
+                    PWDecryptedByte = aesCipher.doFinal(attemptedPassword);
+                    PWClear = new String(PWDecryptedByte, StandardCharsets.UTF_8);
+
                     // converting the strings into byte arrays for comparison
-                    byte[] PWByte = Base64.getDecoder().decode(comparePW);
-                    byte[] saltConverted = Base64.getDecoder().decode(saltString);
-                    byte[] attPWByte = convertAttemptedPassword(attemptedPassword, saltConverted);
+                    PWByte = Base64.getDecoder().decode(comparePW);
+                    saltConvertedByte = Base64.getDecoder().decode(saltString);
+                    attPWByte = convertAttemptedPassword(PWClear, saltConvertedByte);
 
                     // check for match
                     if(Arrays.equals(attPWByte, PWByte)) {
                         match = 1;
+
                     } else {
                         System.out.println("wrong password");
                         match = 0;

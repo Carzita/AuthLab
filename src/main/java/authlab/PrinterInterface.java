@@ -20,6 +20,6 @@ public interface PrinterInterface extends Remote {
     public void setConfig(String parameter, String value) throws RemoteException;
     public String helpCommand() throws RemoteException;
     public byte[] convertAttemptedPassword (String password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException, RemoteException;
-    public int login (String username, String attemptedPassword) throws RemoteException, FileNotFoundException;
+    public int login (byte[] username, byte[] attemptedPassword) throws RemoteException, FileNotFoundException;
 
 }
