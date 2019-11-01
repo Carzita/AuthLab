@@ -23,31 +23,16 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
 
     private boolean running = true;
     private List<String> printerQue = new ArrayList<>();
-    //    public ArrayList<queList> printerQueClass = new ArrayList<queList>();
     private NumberFormat formatter = new DecimalFormat("0000");
-
-    // initializing values to decrypt / encrypt strings passed between client and server
-
 
     protected PrinterServant() throws RemoteException {
         super();
     }
 
-/*    static class queList {
-        String jobNumber;
-        String fileName;
-
-        public queList(String jobNumber, String fileName) {
-            this.jobNumber = jobNumber;
-            this.fileName = fileName;
-        }
-    }*/
-
     @Override
     public String print(String filename, String printer) {
         if (running) {
             String jobNumber = formatter.format(printerQue.size() + 1);
-//            printerQueClass.add(new queList(jobNumber, filename));
             printerQue.add("<" + jobNumber + "> " + "<" + filename + ">");
             return "Printing file: " + filename + " on printer: " + printer;
         } else {
@@ -60,14 +45,16 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
         return printerQue;
     }
 
-/*    @Override
-    public ArrayList<queList> queue() throws RemoteException {
-        return printerQueClass;
-    }*/
-
     @Override
-    public void topQueue(int job) {
-//        printerQue.add(0, job );
+    public String topQueue(String job) {
+        String noZero = job.replaceFirst("^0+(?!$)", "");
+        int jobConverted = Integer.parseInt(noZero);
+        try {
+            return printerQue.get(jobConverted-1);
+        } catch (IndexOutOfBoundsException e) {
+            System.out.println(e);
+            return "No job found";
+        }
     }
 
     @Override
@@ -95,8 +82,13 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
     }
 
     @Override
-    public void restart() {
-        printerQue.clear();
+    public String restart() {
+        if(printerQue.isEmpty()) {
+            return "queue is empty";
+        } else {
+            printerQue.clear();
+            return "Cleared printer queue";
+        }
     }
 
     @Override
@@ -106,12 +98,12 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
 
     @Override
     public String readConfig(String parameter) {
-        return ("Working Directory = " + System.getProperty("user.dir"));
+        return "Fetched read config method from server with parameter: " + parameter;
     }
 
     @Override
-    public void setConfig(String parameter, String value) {
-
+    public String setConfig(String parameter, String value) {
+        return "Fetched setConfig method from server with parameter: " + parameter + "\n and value: " + value;
     }
 
     @Override
@@ -134,7 +126,6 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
         SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
         return factory.generateSecret(spec).getEncoded();
     }
-
 
     @Override
     public int login(byte[] usernameEncypted, byte[] attemptedPassword) {
@@ -172,12 +163,14 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
                     comparePW = currentLine.substring(indexSalt+1, lastIndex);
 
                     // decrypting password received from client and converting it to a string
+                    // a string is necessary because the PBEKeySpec requires a char array
                     PWDecryptedByte = aesCipher.doFinal(attemptedPassword);
                     PWClear = new String(PWDecryptedByte, StandardCharsets.UTF_8);
 
-                    // converting the strings into byte arrays for comparison
+                    // converting the strings into byte arrays
                     PWByte = Base64.getDecoder().decode(comparePW);
                     saltConvertedByte = Base64.getDecoder().decode(saltString);
+                    // then hashing to be compared
                     attPWByte = convertAttemptedPassword(PWClear, saltConvertedByte);
 
                     // check for match
@@ -185,11 +178,11 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
                         match = 1;
 
                     } else {
-                        System.out.println("wrong password");
+                        // password attempted does not match one stored in file
                         match = 0;
                     }
                 } else {
-                    System.out.println("wrong username");
+                    // no username matched with the one inputted
                     match = 0;
                 }
             }
@@ -200,5 +193,4 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
         }
         return 0;
     }
-
 }

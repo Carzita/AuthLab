@@ -21,18 +21,19 @@ public class Client
 {
     public static void main( String[] args ) throws NotBoundException, MalformedURLException, RemoteException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
         // declaring
-        String username, password, input, filename, printer;
-        byte[] usernameByte, ciphertextUN, passwordByte, ciphertextPW;
+        String staticSharedKey, username, password, input, filename, printer;
+        byte[] decodedKeyByte, ciphertextUN, ciphertextPW;
 
-        PrinterInterface service = (PrinterInterface) Naming.lookup("rmi://localhost:5099/printerTest");
+        PrinterInterface service = (PrinterInterface) Naming.lookup("rmi://localhost:5099/printerAuthentication");
         Scanner myScanner = new Scanner(System.in);
 
-        // initializing cipher values
-        String staticSharedKey = "XupwNQ3MFPcj/F/S1KOpDA==";
+        // initializing cipher values for encryption of username and password
+
+        staticSharedKey = "XupwNQ3MFPcj/F/S1KOpDA==";
         // decode the base64 encoded string
-        byte[] decodedKey = Base64.getDecoder().decode(staticSharedKey);
+        decodedKeyByte = Base64.getDecoder().decode(staticSharedKey);
         // build key using SecretKeySpec
-        SecretKey aesKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
+        SecretKey aesKey = new SecretKeySpec(decodedKeyByte, 0, decodedKeyByte.length, "AES");
         Cipher aesCipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
         aesCipher.init(Cipher.ENCRYPT_MODE, aesKey);
 
@@ -41,14 +42,12 @@ public class Client
             System.out.println("Enter Username");
             username = myScanner.nextLine();
             // converting username to byte array and encrypting it
-            usernameByte = username.getBytes();
-            ciphertextUN = aesCipher.doFinal(usernameByte);
+            ciphertextUN = aesCipher.doFinal(username.getBytes());
 
             System.out.println("Enter password");
             password = myScanner.nextLine();
             // converting password to byte array and encrypting it
-            passwordByte = password.getBytes();
-            ciphertextPW = aesCipher.doFinal(passwordByte);
+            ciphertextPW = aesCipher.doFinal(password.getBytes());
 
                 if(service.login(ciphertextUN, ciphertextPW) == 1) {
                     break;
@@ -83,7 +82,9 @@ public class Client
                     System.out.println("Enter job you want to be moved to top of the queue");
                     if (myScanner.hasNextInt()) {
                         int job = myScanner.nextInt();
-                        service.topQueue(job);
+                        String s = String.valueOf(job);
+                        System.out.println("Fetched job: \n" + service.topQueue(s));
+                        myScanner.nextLine();
                         break;
                     } else {
                         System.out.println("Only numbers accepted");
@@ -97,18 +98,21 @@ public class Client
                     System.out.println(service.stop());
                     break;
                 case "restart":
-                    service.restart();
+                    System.out.println(service.restart());
                     break;
                 case "status":
                     System.out.println(service.status());
                     break;
                 case "readconfig":
-//                    service.readConfig();
-                    System.out.println(service.readConfig("lol"));
+                    System.out.println("Enter parameter");
+                    System.out.println(service.readConfig(myScanner.nextLine()));
                     break;
                 case "setconfig":
-//                    service.setConfig();
-                    System.out.println("tba2");
+                    System.out.println("Enter parameter");
+                    String parameterSetC = myScanner.nextLine();
+                    System.out.println("Enter value");
+                    String valueSetC = myScanner.nextLine();
+                    System.out.println(service.setConfig(parameterSetC,valueSetC));
                 case "exit":
                     break loop;
                 default:
