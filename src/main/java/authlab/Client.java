@@ -113,6 +113,7 @@ public class Client
                     System.out.println("Enter value");
                     String valueSetC = myScanner.nextLine();
                     System.out.println(service.setConfig(parameterSetC,valueSetC));
+                    break;
                 case "exit":
                     break loop;
                 default:
