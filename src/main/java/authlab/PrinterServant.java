@@ -7,11 +7,11 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
+import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -24,13 +24,33 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
     private boolean running = true;
     private List<String> printerQue = new ArrayList<>();
     private NumberFormat formatter = new DecimalFormat("0000");
+    private String logUserName;
 
-    protected PrinterServant() throws RemoteException {
+    protected PrinterServant() throws IOException {
         super();
     }
 
     @Override
-    public String print(String filename, String printer) {
+    public void writeToLogFile(String methodName)throws IOException{
+        Timestamp timestampLog = new Timestamp(System.currentTimeMillis());
+        BufferedWriter buffLog = null;
+        try {
+            // true is set because we want to append data
+            FileWriter fileWriter = new FileWriter("log.txt", true);
+            buffLog = new BufferedWriter(fileWriter);
+            buffLog.append("\r\n" + timestampLog + "," + logUserName +"," + methodName);
+        } catch (IOException e) {
+            System.err.println("Error with writeToLogFile: " + e.getMessage());
+        } finally {
+            if (buffLog != null) {
+                buffLog.close();
+            }
+        }
+    }
+
+    @Override
+    public String print(String filename, String printer) throws IOException {
+        writeToLogFile(Thread.currentThread().getStackTrace()[1].getMethodName());
         if (running) {
             String jobNumber = formatter.format(printerQue.size() + 1);
             printerQue.add("<" + jobNumber + "> " + "<" + filename + ">");
@@ -41,12 +61,14 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
     }
 
     @Override
-    public List<String> queue() {
+    public List<String> queue() throws IOException {
+        writeToLogFile(Thread.currentThread().getStackTrace()[1].getMethodName());
         return printerQue;
     }
 
     @Override
-    public String topQueue(String job) {
+    public String topQueue(String job) throws IOException {
+        writeToLogFile(Thread.currentThread().getStackTrace()[1].getMethodName());
         String noZero = job.replaceFirst("^0+(?!$)", "");
         int jobConverted = Integer.parseInt(noZero);
         try {
@@ -58,7 +80,8 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
     }
 
     @Override
-    public String start() {
+    public String start() throws IOException {
+        writeToLogFile(Thread.currentThread().getStackTrace()[1].getMethodName());
         if(!running) {
             running = true;
             System.out.println("Printer starting");
@@ -70,7 +93,8 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
     }
 
     @Override
-    public String stop() {
+    public String stop() throws IOException {
+        writeToLogFile(Thread.currentThread().getStackTrace()[1].getMethodName());
         if(running) {
             running = false;
             System.out.println("Printer stopping");
@@ -82,7 +106,8 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
     }
 
     @Override
-    public String restart() {
+    public String restart() throws IOException {
+        writeToLogFile(Thread.currentThread().getStackTrace()[1].getMethodName());
         if(printerQue.isEmpty()) {
             return "queue is empty";
         } else {
@@ -92,22 +117,26 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
     }
 
     @Override
-    public String status() {
+    public String status() throws IOException {
+        writeToLogFile(Thread.currentThread().getStackTrace()[1].getMethodName());
         return "Running status: " + running;
     }
 
     @Override
-    public String readConfig(String parameter) {
+    public String readConfig(String parameter) throws IOException {
+        writeToLogFile(Thread.currentThread().getStackTrace()[1].getMethodName());
         return "Fetched read config method from server with parameter: " + parameter;
     }
 
     @Override
-    public String setConfig(String parameter, String value) {
+    public String setConfig(String parameter, String value) throws IOException {
+        writeToLogFile(Thread.currentThread().getStackTrace()[1].getMethodName());
         return "Fetched setConfig method from server with parameter: " + parameter + "\n and value: " + value;
     }
 
     @Override
-    public String helpCommand() {
+    public String helpCommand() throws IOException {
+        writeToLogFile(Thread.currentThread().getStackTrace()[1].getMethodName());
         return "List over commands:" +
                 "\nPrint" +
                 "\nQueue" +
@@ -128,7 +157,7 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
     }
 
     @Override
-    public int login(byte[] usernameEncypted, byte[] attemptedPassword) {
+    public int login(byte[] usernameEncrypted, byte[] attemptedPassword) {
         try {
             // declaring
             String staticSharedKey, currentLine, compareUsername, saltString, comparePW, usernameClear, PWClear;
@@ -152,7 +181,7 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
                 compareUsername = currentLine.substring(0,indexUsername);
 
                 // decrypting username received from client and converting it to a string
-                usernameDecryptedByte = aesCipher.doFinal(usernameEncypted);
+                usernameDecryptedByte = aesCipher.doFinal(usernameEncrypted);
                 usernameClear = new String(usernameDecryptedByte, StandardCharsets.UTF_8);
 
                 if(compareUsername.equals(usernameClear)) {
@@ -176,6 +205,7 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
                     // check for match
                     if(Arrays.equals(attPWByte, PWByte)) {
                         match = 1;
+                        logUserName = usernameClear;
 
                     } else {
                         // password attempted does not match one stored in file

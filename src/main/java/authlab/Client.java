@@ -1,25 +1,19 @@
 package authlab;
 
 import javax.crypto.*;
-import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.FileNotFoundException;
-import java.net.MalformedURLException;
-import java.rmi.MarshalException;
+import java.io.IOException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
 import java.util.Base64;
 import java.util.Scanner;
 
 public class Client
 {
-    public static void main( String[] args ) throws NotBoundException, MalformedURLException, RemoteException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+    public static void main( String[] args ) throws NotBoundException, IOException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
         // declaring
         String staticSharedKey, username, password, input, filename, printer;
         byte[] decodedKeyByte, ciphertextUN, ciphertextPW;
