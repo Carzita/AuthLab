@@ -160,10 +160,27 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
     public boolean checkACL(String methodName, int userID) throws IOException {
         FileReader fileReader;
         BufferedReader bufReader;
+        String lineFromACL;
+        int match = 0;
         switch(methodName) {
             case "print":
                 fileReader = new FileReader("ACL/0print.txt");
                 bufReader = new BufferedReader(fileReader);
+                while((lineFromACL = bufReader.readLine()) != null && match != 1) {
+                    int i = Integer.parseInt(lineFromACL.substring(0,1));
+                    if(i==userID){
+                        if(lineFromACL.substring(2,3).equals("T")) {
+                            match = 1;
+                        } else {
+                            match = 0;
+                            fileReader.close();
+                            break;
+                        }
+                    } else {
+                        match = 0;
+                    }
+                }
+                fileReader.close();
                 break;
             case "queue":
                 fileReader = new FileReader("ACL/1queue.txt");
@@ -200,8 +217,7 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
             default:
                 System.out.println("Unknown command, type 'help' for list over commands");
         }
-
-        return false;
+        return match == 1;
     }
 
     @Override

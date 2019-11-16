@@ -62,11 +62,15 @@ public class Client
                     System.out.println(service.helpCommand());
                     break;
                 case "print":
-                    System.out.println("Enter filename");
-                    filename = myScanner.nextLine();
-                    System.out.println("Enter printer");
-                    printer = myScanner.nextLine();
-                    System.out.println(service.print(filename, printer));
+                    if(service.checkACL("print", 99)) {
+                        System.out.println("Enter filename");
+                        filename = myScanner.nextLine();
+                        System.out.println("Enter printer");
+                        printer = myScanner.nextLine();
+                        System.out.println(service.print(filename, printer));
+                    } else {
+                        System.out.println("No privilege to this user for this command");
+                    }
                     break;
                 case "queue":
                     System.out.println("<Job number> <File name>");
