@@ -157,6 +157,54 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
     }
 
     @Override
+    public boolean checkACL(String methodName, int userID) throws IOException {
+        FileReader fileReader;
+        BufferedReader bufReader;
+        switch(methodName) {
+            case "print":
+                fileReader = new FileReader("ACL/0print.txt");
+                bufReader = new BufferedReader(fileReader);
+                break;
+            case "queue":
+                fileReader = new FileReader("ACL/1queue.txt");
+                bufReader = new BufferedReader(fileReader);
+                break;
+            case "topqueue":
+                fileReader = new FileReader("ACL/2topqueue.txt");
+                bufReader = new BufferedReader(fileReader);
+                break;
+            case "start":
+                fileReader = new FileReader("ACL/3start.txt");
+                bufReader = new BufferedReader(fileReader);
+                break;
+            case "stop":
+                fileReader = new FileReader("ACL/4stop.txt");
+                bufReader = new BufferedReader(fileReader);
+                break;
+            case "restart":
+                fileReader = new FileReader("ACL/5restart.txt");
+                bufReader = new BufferedReader(fileReader);
+                break;
+            case "status":
+                fileReader = new FileReader("ACL/6status.txt");
+                bufReader = new BufferedReader(fileReader);
+                break;
+            case "readconfig":
+                fileReader = new FileReader("ACL/7readconfig.txt");
+                bufReader = new BufferedReader(fileReader);
+                break;
+            case "setconfig":
+                fileReader = new FileReader("ACL/8setconfig.txt");
+                bufReader = new BufferedReader(fileReader);
+                break;
+            default:
+                System.out.println("Unknown command, type 'help' for list over commands");
+        }
+
+        return false;
+    }
+
+    @Override
     public int login(byte[] usernameEncrypted, byte[] attemptedPassword) {
         try {
             // declaring
