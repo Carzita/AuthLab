@@ -24,4 +24,5 @@ public interface PrinterInterface extends Remote {
     public int login (byte[] username, byte[] attemptedPassword) throws RemoteException, FileNotFoundException;
     public void writeToLogFile(String methodName) throws IOException;
     public boolean checkACL (String methodName, int userID) throws IOException;
+    public boolean checkRBAC (String methodName, int userID) throws IOException;
 }

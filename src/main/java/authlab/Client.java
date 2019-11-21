@@ -62,7 +62,7 @@ public class Client
                     System.out.println(service.helpCommand());
                     break;
                 case "print":
-                    if(service.checkACL("print", 99)) {
+                    if(service.checkACL("print", 1)) {
                         System.out.println("Enter filename");
                         filename = myScanner.nextLine();
                         System.out.println("Enter printer");

@@ -160,64 +160,112 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
     public boolean checkACL(String methodName, int userID) throws IOException {
         FileReader fileReader;
         BufferedReader bufReader;
-        String lineFromACL;
         int match = 0;
         switch(methodName) {
             case "print":
                 fileReader = new FileReader("ACL/0print.txt");
                 bufReader = new BufferedReader(fileReader);
-                while((lineFromACL = bufReader.readLine()) != null && match != 1) {
-                    int i = Integer.parseInt(lineFromACL.substring(0,1));
-                    if(i==userID){
-                        if(lineFromACL.substring(2,3).equals("T")) {
-                            match = 1;
-                        } else {
-                            match = 0;
-                            fileReader.close();
-                            break;
-                        }
-                    } else {
-                        match = 0;
-                    }
-                }
+                match = getMatch(userID, fileReader, bufReader, match);
                 fileReader.close();
                 break;
             case "queue":
                 fileReader = new FileReader("ACL/1queue.txt");
                 bufReader = new BufferedReader(fileReader);
+                match = getMatch(userID, fileReader, bufReader, match);
+                fileReader.close();
                 break;
             case "topqueue":
                 fileReader = new FileReader("ACL/2topqueue.txt");
                 bufReader = new BufferedReader(fileReader);
+                match = getMatch(userID, fileReader, bufReader, match);
+                fileReader.close();
                 break;
             case "start":
                 fileReader = new FileReader("ACL/3start.txt");
                 bufReader = new BufferedReader(fileReader);
+                match = getMatch(userID, fileReader, bufReader, match);
+                fileReader.close();
                 break;
             case "stop":
                 fileReader = new FileReader("ACL/4stop.txt");
                 bufReader = new BufferedReader(fileReader);
+                match = getMatch(userID, fileReader, bufReader, match);
+                fileReader.close();
                 break;
             case "restart":
                 fileReader = new FileReader("ACL/5restart.txt");
                 bufReader = new BufferedReader(fileReader);
+                match = getMatch(userID, fileReader, bufReader, match);
+                fileReader.close();
                 break;
             case "status":
                 fileReader = new FileReader("ACL/6status.txt");
                 bufReader = new BufferedReader(fileReader);
+                match = getMatch(userID, fileReader, bufReader, match);
+                fileReader.close();
                 break;
             case "readconfig":
                 fileReader = new FileReader("ACL/7readconfig.txt");
                 bufReader = new BufferedReader(fileReader);
+                match = getMatch(userID, fileReader, bufReader, match);
+                fileReader.close();
                 break;
             case "setconfig":
                 fileReader = new FileReader("ACL/8setconfig.txt");
                 bufReader = new BufferedReader(fileReader);
+                match = getMatch(userID, fileReader, bufReader, match);
+                fileReader.close();
                 break;
             default:
                 System.out.println("Unknown command, type 'help' for list over commands");
         }
         return match == 1;
+    }
+
+    private int getMatch(int userID, FileReader fileReader, BufferedReader bufReader, int match) throws IOException {
+        String lineFromACL;
+        while((lineFromACL = bufReader.readLine()) != null && match != 1) {
+            int i = Integer.parseInt(lineFromACL.substring(0,1));
+            if(i==userID){
+                if(lineFromACL.substring(2).equals("T")) {
+                    match = 1;
+                } else {
+                    match = 0;
+                    fileReader.close();
+                    break;
+                }
+            } else {
+                match = 0;
+            }
+        }
+        return match;
+    }
+
+    public boolean checkRBAC (String methodName, int userID) throws IOException {
+        FileReader fileReader;
+        BufferedReader bufReader;
+        int match = 0;
+        fileReader = new FileReader("RBAC/role.txt");
+        bufReader = new BufferedReader(fileReader);
+        String lineFromACL, role;
+        while((lineFromACL = bufReader.readLine()) != null && match != 1) {
+            int i = Integer.parseInt(lineFromACL.substring(0,1));
+            if(i==userID){
+                role = lineFromACL.substring(2);
+                match = 1;
+            } else {
+                match = 0;
+            }
+        }
+        fileReader.close();
+        if(match==1){
+            fileReader = new FileReader("RBAC/access.txt");
+            bufReader = new BufferedReader(fileReader);
+        } else {
+            return false;
+        }
+
+        return false;
     }
 
     @Override
