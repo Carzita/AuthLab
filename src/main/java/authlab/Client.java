@@ -34,7 +34,7 @@ public class Client
         while (true) {
             try {
                 System.out.println("Enter Username");
-                username = myScanner.nextLine();
+                username = myScanner.nextLine().toLowerCase();
                 // converting username to byte array and encrypting it
                 ciphertextUN = aesCipher.doFinal(username.getBytes());
 
@@ -56,106 +56,110 @@ public class Client
         loop: while (true) {
             System.out.println("Enter command, enter help for a list over commands");
             input = myScanner.nextLine();
-            switch (input.toLowerCase()) {
-                case "help":
-                    System.out.println(service.helpCommand());
-                    break;
-                case "print":
-                    if(service.checkACL("print")) {
+            try {
+                switch (input.toLowerCase()) {
+                    case "help":
+                        System.out.println(service.helpCommand());
+                        break;
+                    case "print":
+                        if(service.checkACL("print")) {
 //                    if(service.checkRBAC("print")) {
-                        System.out.println("Enter filename");
-                        filename = myScanner.nextLine();
-                        System.out.println("Enter printer");
-                        printer = myScanner.nextLine();
-                        System.out.println(service.print(filename, printer));
-                    } else {
-                        System.out.println("No privilege to this user for this command");
-                    }
-                    break;
-                case "queue":
-                    if(service.checkACL("queue")) {
-//                    if(service.checkRBAC("queue")) {
-                        System.out.println("<Job number> <File name>");
-                        service.queue().forEach(System.out::println);
-                    } else {
-                        System.out.println("No privilege to this user for this command");
-                    }
-                    break;
-                case "topqueue":
-                    if(service.checkACL("topqueue")) {
-//                    if(service.checkRBAC("topqueue")) {
-                        System.out.println("Enter job you want to be moved to top of the queue");
-                        if (myScanner.hasNextInt()) {
-                            int job = myScanner.nextInt();
-                            String s = String.valueOf(job);
-                            System.out.println("Fetched job: \n" + service.topQueue(s));
-                            myScanner.nextLine();
-                            break;
+                            System.out.println("Enter filename");
+                            filename = myScanner.nextLine();
+                            System.out.println("Enter printer");
+                            printer = myScanner.nextLine();
+                            System.out.println(service.print(filename, printer));
                         } else {
-                            System.out.println("Only numbers accepted");
-                            myScanner.nextLine();
+                            System.out.println("No privilege to this user for this command");
                         }
-                    } else {
-                        System.out.println("No privilege to this user for this command");
-                    }
-                    break;
-                case "start":
-                    if(service.checkACL("start")) {
+                        break;
+                    case "queue":
+                        if(service.checkACL("queue")) {
+//                    if(service.checkRBAC("queue")) {
+                            System.out.println("<Job number> <File name>");
+                            service.queue().forEach(System.out::println);
+                        } else {
+                            System.out.println("No privilege to this user for this command");
+                        }
+                        break;
+                    case "topqueue":
+                        if(service.checkACL("topqueue")) {
+//                    if(service.checkRBAC("topqueue")) {
+                            System.out.println("Enter job you want to be moved to top of the queue");
+                            if (myScanner.hasNextInt()) {
+                                int job = myScanner.nextInt();
+                                String s = String.valueOf(job);
+                                System.out.println("Fetched job: \n" + service.topQueue(s));
+                                myScanner.nextLine();
+                                break;
+                            } else {
+                                System.out.println("Only numbers accepted");
+                                myScanner.nextLine();
+                            }
+                        } else {
+                            System.out.println("No privilege to this user for this command");
+                        }
+                        break;
+                    case "start":
+                        if(service.checkACL("start")) {
 //                    if(service.checkRBAC("start")) {
-                        System.out.println(service.start());
-                    } else {
-                        System.out.println("No privilege to this user for this command");
-                    }
-                    break;
-                case "stop":
-                    if(service.checkACL("stop")) {
+                            System.out.println(service.start());
+                        } else {
+                            System.out.println("No privilege to this user for this command");
+                        }
+                        break;
+                    case "stop":
+                        if(service.checkACL("stop")) {
 //                    if(service.checkRBAC("stop")) {
-                        System.out.println(service.stop());
-                    } else {
-                        System.out.println("No privilege to this user for this command");
-                    }
-                    break;
-                case "restart":
-                    if(service.checkACL("restart")) {
+                            System.out.println(service.stop());
+                        } else {
+                            System.out.println("No privilege to this user for this command");
+                        }
+                        break;
+                    case "restart":
+                        if(service.checkACL("restart")) {
 //                    if(service.checkRBAC("restart")) {
-                        System.out.println(service.restart());
-                    } else {
-                        System.out.println("No privilege to this user for this command");
-                    }
-                    break;
-                case "status":
-                    if(service.checkACL("status")) {
+                            System.out.println(service.restart());
+                        } else {
+                            System.out.println("No privilege to this user for this command");
+                        }
+                        break;
+                    case "status":
+                        if(service.checkACL("status")) {
 //                    if(service.checkRBAC("status")) {
-                        System.out.println(service.status());
-                    } else {
-                        System.out.println("No privilege to this user for this command");
-                    }
-                    break;
-                case "readconfig":
-//                    if(service.checkACL("readconfig")) {
-                    if(service.checkRBAC("readconfig")) {
-                        System.out.println("Enter parameter");
-                        System.out.println(service.readConfig(myScanner.nextLine()));
-                    } else {
-                        System.out.println("No privilege to this user for this command");
-                    }
-                    break;
-                case "setconfig":
-                    if(service.checkACL("setconfig")) {
+                            System.out.println(service.status());
+                        } else {
+                            System.out.println("No privilege to this user for this command");
+                        }
+                        break;
+                    case "readconfig":
+                        if(service.checkACL("readconfig")) {
+//                    if(service.checkRBAC("readconfig")) {
+                            System.out.println("Enter parameter");
+                            System.out.println(service.readConfig(myScanner.nextLine()));
+                        } else {
+                            System.out.println("No privilege to this user for this command");
+                        }
+                        break;
+                    case "setconfig":
+                        if(service.checkACL("setconfig")) {
 //                    if(service.checkRBAC("setconfig")) {
-                        System.out.println("Enter parameter");
-                        String parameterSetC = myScanner.nextLine();
-                        System.out.println("Enter value");
-                        String valueSetC = myScanner.nextLine();
-                        System.out.println(service.setConfig(parameterSetC,valueSetC));
-                    } else {
-                        System.out.println("No privilege to this user for this command");
-                    }
-                    break;
-                case "exit":
-                    break loop;
-                default:
-                    System.out.println("Unknown command, type 'help' for list over commands");
+                            System.out.println("Enter parameter");
+                            String parameterSetC = myScanner.nextLine();
+                            System.out.println("Enter value");
+                            String valueSetC = myScanner.nextLine();
+                            System.out.println(service.setConfig(parameterSetC,valueSetC));
+                        } else {
+                            System.out.println("No privilege to this user for this command");
+                        }
+                        break;
+                    case "exit":
+                        break loop;
+                    default:
+                        System.out.println("Unknown command, type 'help' for list over commands");
+                }
+            } catch (FileNotFoundException e) {
+                System.out.println(e);
             }
         }
     }
