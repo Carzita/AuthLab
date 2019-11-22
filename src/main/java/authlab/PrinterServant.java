@@ -166,6 +166,8 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
         BufferedReader bufReader;
         int match = 0;
         switch(methodName) {
+       /*    switch depending on which method method access file is requested, userID is saved on server when user logs in
+             so is therefore not part of the method parameters from client*/
             case "print":
                 fileReader = new FileReader("ACL/0print.txt");
                 bufReader = new BufferedReader(fileReader);
@@ -253,6 +255,7 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
         fileReader = new FileReader("RBAC/role.txt");
         bufReader = new BufferedReader(fileReader);
         String lineFromRBACrole, role = null;
+        // retrieving user role from role.txt according to userID
         while((lineFromRBACrole = bufReader.readLine()) != null && match != 1) {
             int i = Integer.parseInt(lineFromRBACrole.substring(0,1));
             if(i==userID){
@@ -260,13 +263,13 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
                 match = 1;
                 System.out.println("User id found and is: " + userID + " and is assigned role: " + role );
             } else {
-                System.out.println("The userID does not match with any role");
                 match = 0;
             }
         }
         fileReader.close();
         if(match==1){
             boolean privilege = false;
+            // getting line of role privileges to be checked in getMatchRBAC method
             switch(role) {
                 case "manager":
                     String managerAccess = Files.readAllLines(Paths.get("RBAC/access.txt")).get(0);
@@ -285,10 +288,12 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
                     privilege = getMatchRBAC(userAccess, methodName);
                     break;
                 default:
-                    System.out.println("Unknown user, contact IT for support");
+                    System.out.println("Unknown user role, contact IT for support");
             }
+            // returning if the user role has access to the requested method
             return privilege;
         } else {
+            System.out.println("The userID does not match with any role");
             return false;
         }
     }
@@ -297,6 +302,8 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
         int indexRoleEnd = userAccess.indexOf(",");
         boolean access = false;
         switch(methodName) {
+/*           checking if role has access to the method which is done by finding T according to index in access file.
+             In the access file the T's are sorted in order of appearance (same order as ACL files)*/
             case "print":
                 access = (userAccess.substring(indexRoleEnd+1, indexRoleEnd+2).equals("T"));
                 break;
