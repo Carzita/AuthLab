@@ -1,4 +1,4 @@
 manager,T,T,T,T,T,T,T,T,T
 janitor,F,F,F,T,T,T,T,T,T
-poweruser,T,T,T,F,F,F,F,F,F
+poweruser,T,T,T,F,F,T,F,F,F
 user,T,T,F,F,F,F,F,F,F

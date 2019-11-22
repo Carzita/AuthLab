@@ -7,6 +7,8 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -25,6 +27,7 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
     private List<String> printerQue = new ArrayList<>();
     private NumberFormat formatter = new DecimalFormat("0000");
     private String logUserName;
+    private int userID;
 
     protected PrinterServant() throws IOException {
         super();
@@ -157,7 +160,8 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
     }
 
     @Override
-    public boolean checkACL(String methodName, int userID) throws IOException {
+    public boolean checkACL(String methodName) throws IOException {
+        System.out.println("Checking access via ACL on user: " + userID + " on method: " + methodName);
         FileReader fileReader;
         BufferedReader bufReader;
         int match = 0;
@@ -165,55 +169,55 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
             case "print":
                 fileReader = new FileReader("ACL/0print.txt");
                 bufReader = new BufferedReader(fileReader);
-                match = getMatch(userID, fileReader, bufReader, match);
+                match = getMatchACL(userID, fileReader, bufReader, match);
                 fileReader.close();
                 break;
             case "queue":
                 fileReader = new FileReader("ACL/1queue.txt");
                 bufReader = new BufferedReader(fileReader);
-                match = getMatch(userID, fileReader, bufReader, match);
+                match = getMatchACL(userID, fileReader, bufReader, match);
                 fileReader.close();
                 break;
             case "topqueue":
                 fileReader = new FileReader("ACL/2topqueue.txt");
                 bufReader = new BufferedReader(fileReader);
-                match = getMatch(userID, fileReader, bufReader, match);
+                match = getMatchACL(userID, fileReader, bufReader, match);
                 fileReader.close();
                 break;
             case "start":
                 fileReader = new FileReader("ACL/3start.txt");
                 bufReader = new BufferedReader(fileReader);
-                match = getMatch(userID, fileReader, bufReader, match);
+                match = getMatchACL(userID, fileReader, bufReader, match);
                 fileReader.close();
                 break;
             case "stop":
                 fileReader = new FileReader("ACL/4stop.txt");
                 bufReader = new BufferedReader(fileReader);
-                match = getMatch(userID, fileReader, bufReader, match);
+                match = getMatchACL(userID, fileReader, bufReader, match);
                 fileReader.close();
                 break;
             case "restart":
                 fileReader = new FileReader("ACL/5restart.txt");
                 bufReader = new BufferedReader(fileReader);
-                match = getMatch(userID, fileReader, bufReader, match);
+                match = getMatchACL(userID, fileReader, bufReader, match);
                 fileReader.close();
                 break;
             case "status":
                 fileReader = new FileReader("ACL/6status.txt");
                 bufReader = new BufferedReader(fileReader);
-                match = getMatch(userID, fileReader, bufReader, match);
+                match = getMatchACL(userID, fileReader, bufReader, match);
                 fileReader.close();
                 break;
             case "readconfig":
                 fileReader = new FileReader("ACL/7readconfig.txt");
                 bufReader = new BufferedReader(fileReader);
-                match = getMatch(userID, fileReader, bufReader, match);
+                match = getMatchACL(userID, fileReader, bufReader, match);
                 fileReader.close();
                 break;
             case "setconfig":
                 fileReader = new FileReader("ACL/8setconfig.txt");
                 bufReader = new BufferedReader(fileReader);
-                match = getMatch(userID, fileReader, bufReader, match);
+                match = getMatchACL(userID, fileReader, bufReader, match);
                 fileReader.close();
                 break;
             default:
@@ -222,7 +226,7 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
         return match == 1;
     }
 
-    private int getMatch(int userID, FileReader fileReader, BufferedReader bufReader, int match) throws IOException {
+    private int getMatchACL(int userID, FileReader fileReader, BufferedReader bufReader, int match) throws IOException {
         String lineFromACL;
         while((lineFromACL = bufReader.readLine()) != null && match != 1) {
             int i = Integer.parseInt(lineFromACL.substring(0,1));
@@ -241,31 +245,89 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
         return match;
     }
 
-    public boolean checkRBAC (String methodName, int userID) throws IOException {
+    public boolean checkRBAC (String methodName) throws IOException {
+        System.out.println("Checking access via RBAC on user: " + userID + " on method: " + methodName);
         FileReader fileReader;
         BufferedReader bufReader;
         int match = 0;
         fileReader = new FileReader("RBAC/role.txt");
         bufReader = new BufferedReader(fileReader);
-        String lineFromACL, role;
-        while((lineFromACL = bufReader.readLine()) != null && match != 1) {
-            int i = Integer.parseInt(lineFromACL.substring(0,1));
+        String lineFromRBACrole, role = null;
+        while((lineFromRBACrole = bufReader.readLine()) != null && match != 1) {
+            int i = Integer.parseInt(lineFromRBACrole.substring(0,1));
             if(i==userID){
-                role = lineFromACL.substring(2);
+                role = lineFromRBACrole.substring(2);
                 match = 1;
+                System.out.println("User id found and is: " + userID + " and is assigned role: " + role );
             } else {
+                System.out.println("The userID does not match with any role");
                 match = 0;
             }
         }
         fileReader.close();
         if(match==1){
-            fileReader = new FileReader("RBAC/access.txt");
-            bufReader = new BufferedReader(fileReader);
+            boolean privilege = false;
+            switch(role) {
+                case "manager":
+                    String managerAccess = Files.readAllLines(Paths.get("RBAC/access.txt")).get(0);
+                    privilege = getMatchRBAC(managerAccess, methodName);
+                    break;
+                case "janitor":
+                    String janitorAccess = Files.readAllLines(Paths.get("RBAC/access.txt")).get(1);
+                    privilege = getMatchRBAC(janitorAccess, methodName);
+                    break;
+                case "poweruser":
+                    String poweruserAccess = Files.readAllLines(Paths.get("RBAC/access.txt")).get(2);
+                    privilege = getMatchRBAC(poweruserAccess, methodName);
+                    break;
+                case "user":
+                    String userAccess = Files.readAllLines(Paths.get("RBAC/access.txt")).get(3);
+                    privilege = getMatchRBAC(userAccess, methodName);
+                    break;
+                default:
+                    System.out.println("Unknown user, contact IT for support");
+            }
+            return privilege;
         } else {
             return false;
         }
+    }
 
-        return false;
+    public boolean getMatchRBAC (String userAccess, String methodName) throws IOException {
+        int indexRoleEnd = userAccess.indexOf(",");
+        boolean access = false;
+        switch(methodName) {
+            case "print":
+                access = (userAccess.substring(indexRoleEnd+1, indexRoleEnd+2).equals("T"));
+                break;
+            case "queue":
+                access = (userAccess.substring(indexRoleEnd+3, indexRoleEnd+4).equals("T"));
+                break;
+            case "topqueue":
+                access = (userAccess.substring(indexRoleEnd+5, indexRoleEnd+6).equals("T"));
+                break;
+            case "start":
+                access = (userAccess.substring(indexRoleEnd+7, indexRoleEnd+8).equals("T"));
+                break;
+            case "stop":
+                access = (userAccess.substring(indexRoleEnd+9, indexRoleEnd+10).equals("T"));
+                break;
+            case "restart":
+                access = (userAccess.substring(indexRoleEnd+11, indexRoleEnd+12).equals("T"));
+                break;
+            case "status":
+                access = (userAccess.substring(indexRoleEnd+13, indexRoleEnd+14).equals("T"));
+                break;
+            case "readconfig":
+                access = (userAccess.substring(indexRoleEnd+15, indexRoleEnd+16).equals("T"));
+                break;
+            case "setconfig":
+                access = (userAccess.substring(indexRoleEnd+17).equals("T"));
+                break;
+            default:
+                System.out.println("Unknown command, type 'help' for list over commands");
+        }
+        return access;
     }
 
     @Override
@@ -273,7 +335,7 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
         try {
             // declaring
             String staticSharedKey, currentLine, compareUsername, saltString, comparePW, usernameClear, PWClear;
-            int match = 0, indexUsername, indexSalt, lastIndex;
+            int match = 0, indexUsername, indexSalt, lastIndex, indexID;
             byte[] decodedKeyByte, usernameDecryptedByte, PWDecryptedByte, PWByte, saltConvertedByte, attPWByte;
 
             FileReader fileReader = new FileReader("users.txt");
@@ -290,7 +352,9 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
 
             while((currentLine = bufReader.readLine()) != null && match != 1) {
                 indexUsername = currentLine.indexOf(",");
-                compareUsername = currentLine.substring(0,indexUsername);
+                indexID = currentLine.indexOf(":");
+
+                compareUsername = currentLine.substring(indexID+1,indexUsername);
 
                 // decrypting username received from client and converting it to a string
                 usernameDecryptedByte = aesCipher.doFinal(usernameEncrypted);
@@ -318,6 +382,7 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
                     if(Arrays.equals(attPWByte, PWByte)) {
                         match = 1;
                         logUserName = usernameClear;
+                        userID = Integer.parseInt(currentLine.substring(0, 1));
 
                     } else {
                         // password attempted does not match one stored in file
