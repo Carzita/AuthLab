@@ -172,54 +172,63 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
                 fileReader = new FileReader("ACL/0print.txt");
                 bufReader = new BufferedReader(fileReader);
                 match = getMatchACL(userID, fileReader, bufReader, match);
+                bufReader.close();
                 fileReader.close();
                 break;
             case "queue":
                 fileReader = new FileReader("ACL/1queue.txt");
                 bufReader = new BufferedReader(fileReader);
                 match = getMatchACL(userID, fileReader, bufReader, match);
+                bufReader.close();
                 fileReader.close();
                 break;
             case "topqueue":
                 fileReader = new FileReader("ACL/2topqueue.txt");
                 bufReader = new BufferedReader(fileReader);
                 match = getMatchACL(userID, fileReader, bufReader, match);
+                bufReader.close();
                 fileReader.close();
                 break;
             case "start":
                 fileReader = new FileReader("ACL/3start.txt");
                 bufReader = new BufferedReader(fileReader);
                 match = getMatchACL(userID, fileReader, bufReader, match);
+                bufReader.close();
                 fileReader.close();
                 break;
             case "stop":
                 fileReader = new FileReader("ACL/4stop.txt");
                 bufReader = new BufferedReader(fileReader);
                 match = getMatchACL(userID, fileReader, bufReader, match);
+                bufReader.close();
                 fileReader.close();
                 break;
             case "restart":
                 fileReader = new FileReader("ACL/5restart.txt");
                 bufReader = new BufferedReader(fileReader);
                 match = getMatchACL(userID, fileReader, bufReader, match);
+                bufReader.close();
                 fileReader.close();
                 break;
             case "status":
                 fileReader = new FileReader("ACL/6status.txt");
                 bufReader = new BufferedReader(fileReader);
                 match = getMatchACL(userID, fileReader, bufReader, match);
+                bufReader.close();
                 fileReader.close();
                 break;
             case "readconfig":
                 fileReader = new FileReader("ACL/7readconfig.txt");
                 bufReader = new BufferedReader(fileReader);
                 match = getMatchACL(userID, fileReader, bufReader, match);
+                bufReader.close();
                 fileReader.close();
                 break;
             case "setconfig":
                 fileReader = new FileReader("ACL/8setconfig.txt");
                 bufReader = new BufferedReader(fileReader);
                 match = getMatchACL(userID, fileReader, bufReader, match);
+                bufReader.close();
                 fileReader.close();
                 break;
             default:
