@@ -62,7 +62,7 @@ public class Client
                         System.out.println(service.helpCommand());
                         break;
                     case "print":
-                        if(service.checkACL("print")) {
+                        if(service.checkAccessACL("print")) {
 //                    if(service.checkRBAC("print")) {
                             System.out.println("Enter filename");
                             filename = myScanner.nextLine();
@@ -75,7 +75,7 @@ public class Client
                         break;
                     case "queue":
 //                        if(service.checkACL("queue")) {
-                    if(service.checkRBAC("queue")) {
+                    if(service.checkAccessRBAC("queue")) {
                             System.out.println("<Job number> <File name>");
                             service.queue().forEach(System.out::println);
                         } else {
@@ -84,7 +84,7 @@ public class Client
                         break;
                     case "topqueue":
 //                        if(service.checkACL("topqueue")) {
-                    if(service.checkRBAC("topqueue")) {
+                    if(service.checkAccessRBAC("topqueue")) {
                             System.out.println("Enter job you want to be moved to top of the queue");
                             if (myScanner.hasNextInt()) {
                                 int job = myScanner.nextInt();
@@ -102,7 +102,7 @@ public class Client
                         break;
                     case "start":
 //                        if(service.checkACL("start")) {
-                    if(service.checkRBAC("start")) {
+                    if(service.checkAccessRBAC("start")) {
                             System.out.println(service.start());
                         } else {
                             System.out.println("No privilege to this user for this command");
@@ -110,7 +110,7 @@ public class Client
                         break;
                     case "stop":
 //                        if(service.checkACL("stop")) {
-                    if(service.checkRBAC("stop")) {
+                    if(service.checkAccessRBAC("stop")) {
                             System.out.println(service.stop());
                         } else {
                             System.out.println("No privilege to this user for this command");
@@ -118,7 +118,7 @@ public class Client
                         break;
                     case "restart":
 //                        if(service.checkACL("restart")) {
-                    if(service.checkRBAC("restart")) {
+                    if(service.checkAccessRBAC("restart")) {
                             System.out.println(service.restart());
                         } else {
                             System.out.println("No privilege to this user for this command");
@@ -126,7 +126,7 @@ public class Client
                         break;
                     case "status":
 //                        if(service.checkACL("status")) {
-                    if(service.checkRBAC("status")) {
+                    if(service.checkAccessRBAC("status")) {
                             System.out.println(service.status());
                         } else {
                             System.out.println("No privilege to this user for this command");
@@ -134,7 +134,7 @@ public class Client
                         break;
                     case "readconfig":
 //                        if(service.checkACL("readconfig")) {
-                    if(service.checkRBAC("readconfig")) {
+                    if(service.checkAccessRBAC("readconfig")) {
                             System.out.println("Enter parameter");
                             System.out.println(service.readConfig(myScanner.nextLine()));
                         } else {
@@ -143,7 +143,7 @@ public class Client
                         break;
                     case "setconfig":
 //                        if(service.checkACL("setconfig")) {
-                    if(service.checkRBAC("setconfig")) {
+                    if(service.checkAccessRBAC("setconfig")) {
                             System.out.println("Enter parameter");
                             String parameterSetC = myScanner.nextLine();
                             System.out.println("Enter value");

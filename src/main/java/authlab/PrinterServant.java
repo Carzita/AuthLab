@@ -159,75 +159,77 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
         return factory.generateSecret(spec).getEncoded();
     }
 
+    // check user access via ACL
     @Override
-    public boolean checkACL(String methodName) throws IOException {
+    public boolean checkAccessACL(String methodName) throws IOException {
         System.out.println("Checking access via ACL on user: " + userID + " on method: " + methodName);
         FileReader fileReader;
         BufferedReader bufReader;
         int match = 0;
+               /*  switch depending on which method method access file is requested, userID is saved on server when
+               user logs in so is therefore not part of the method parameters from client*/
         switch(methodName) {
-       /*    switch depending on which method method access file is requested, userID is saved on server when user logs in
-             so is therefore not part of the method parameters from client*/
             case "print":
                 fileReader = new FileReader("ACL/0print.txt");
                 bufReader = new BufferedReader(fileReader);
-                match = getMatchACL(userID, fileReader, bufReader, match);
+                // checking for this printer function if user has access via getPermissionACL method
+                match = getPermissionACL(userID, bufReader, match);
                 bufReader.close();
                 fileReader.close();
                 break;
             case "queue":
                 fileReader = new FileReader("ACL/1queue.txt");
                 bufReader = new BufferedReader(fileReader);
-                match = getMatchACL(userID, fileReader, bufReader, match);
+                match = getPermissionACL(userID, bufReader, match);
                 bufReader.close();
                 fileReader.close();
                 break;
             case "topqueue":
                 fileReader = new FileReader("ACL/2topqueue.txt");
                 bufReader = new BufferedReader(fileReader);
-                match = getMatchACL(userID, fileReader, bufReader, match);
+                match = getPermissionACL(userID, bufReader, match);
                 bufReader.close();
                 fileReader.close();
                 break;
             case "start":
                 fileReader = new FileReader("ACL/3start.txt");
                 bufReader = new BufferedReader(fileReader);
-                match = getMatchACL(userID, fileReader, bufReader, match);
+                match = getPermissionACL(userID, bufReader, match);
                 bufReader.close();
                 fileReader.close();
                 break;
             case "stop":
                 fileReader = new FileReader("ACL/4stop.txt");
                 bufReader = new BufferedReader(fileReader);
-                match = getMatchACL(userID, fileReader, bufReader, match);
+                match = getPermissionACL(userID, bufReader, match);
                 bufReader.close();
                 fileReader.close();
                 break;
             case "restart":
                 fileReader = new FileReader("ACL/5restart.txt");
                 bufReader = new BufferedReader(fileReader);
-                match = getMatchACL(userID, fileReader, bufReader, match);
+                match = getPermissionACL(userID, bufReader, match);
                 bufReader.close();
                 fileReader.close();
                 break;
             case "status":
                 fileReader = new FileReader("ACL/6status.txt");
                 bufReader = new BufferedReader(fileReader);
-                match = getMatchACL(userID, fileReader, bufReader, match);
+                match = getPermissionACL(userID, bufReader, match);
                 bufReader.close();
                 fileReader.close();
                 break;
             case "readconfig":
                 fileReader = new FileReader("ACL/7readconfig.txt");
                 bufReader = new BufferedReader(fileReader);
-                match = getMatchACL(userID, fileReader, bufReader, match);
+                match = getPermissionACL(userID, bufReader, match);
                 bufReader.close();
                 fileReader.close();
                 break;
             case "setconfig":
                 fileReader = new FileReader("ACL/8setconfig.txt");
                 bufReader = new BufferedReader(fileReader);
-                match = getMatchACL(userID, fileReader, bufReader, match);
+                match = getPermissionACL(userID, bufReader, match);
                 bufReader.close();
                 fileReader.close();
                 break;
@@ -237,26 +239,30 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
         return match == 1;
     }
 
-    private int getMatchACL(int userID, FileReader fileReader, BufferedReader bufReader, int match) throws IOException {
+    private int getPermissionACL(int userID, BufferedReader bufReader, int match) throws IOException {
         String lineFromACL;
+        // while there is no match and still lines left
         while((lineFromACL = bufReader.readLine()) != null && match != 1) {
             int i = Integer.parseInt(lineFromACL.substring(0,1));
             if(i==userID){
+                // check if access is equal to T (true)
                 if(lineFromACL.substring(2).equals("T")) {
                     match = 1;
                 } else {
                     match = 0;
-                    fileReader.close();
+                    // user does not have access, breaking while loop
                     break;
                 }
             } else {
                 match = 0;
             }
         }
+        // return permission
         return match;
     }
 
-    public boolean checkRBAC (String methodName) throws IOException {
+    // check user access via RBAC
+    public boolean checkAccessRBAC(String methodName) throws IOException {
         System.out.println("Checking access via RBAC on user: " + userID + " on method: " + methodName);
         FileReader fileReader;
         BufferedReader bufReader;
@@ -282,19 +288,19 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
             switch(role) {
                 case "manager":
                     String managerAccess = Files.readAllLines(Paths.get("RBAC/access.txt")).get(0);
-                    privilege = getMatchRBAC(managerAccess, methodName);
+                    privilege = getPrivilegeRBAC(managerAccess, methodName);
                     break;
                 case "janitor":
                     String janitorAccess = Files.readAllLines(Paths.get("RBAC/access.txt")).get(1);
-                    privilege = getMatchRBAC(janitorAccess, methodName);
+                    privilege = getPrivilegeRBAC(janitorAccess, methodName);
                     break;
                 case "poweruser":
                     String poweruserAccess = Files.readAllLines(Paths.get("RBAC/access.txt")).get(2);
-                    privilege = getMatchRBAC(poweruserAccess, methodName);
+                    privilege = getPrivilegeRBAC(poweruserAccess, methodName);
                     break;
                 case "user":
                     String userAccess = Files.readAllLines(Paths.get("RBAC/access.txt")).get(3);
-                    privilege = getMatchRBAC(userAccess, methodName);
+                    privilege = getPrivilegeRBAC(userAccess, methodName);
                     break;
                 default:
                     System.out.println("Unknown user role, contact IT for support");
@@ -307,11 +313,11 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
         }
     }
 
-    public boolean getMatchRBAC (String userAccess, String methodName) throws IOException {
+    public boolean getPrivilegeRBAC(String userAccess, String methodName) throws IOException {
         int indexRoleEnd = userAccess.indexOf(",");
         boolean access = false;
         switch(methodName) {
-/*           checking if role has access to the method which is done by finding T according to index in access file.
+/*           checking if role has access to the method which is done by checking according to index if it's T(true) in access file.
              In the access file the T's are sorted in order of appearance (same order as ACL files)*/
             case "print":
                 access = (userAccess.substring(indexRoleEnd+1, indexRoleEnd+2).equals("T"));
@@ -341,7 +347,7 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
                 access = (userAccess.substring(indexRoleEnd+17).equals("T"));
                 break;
             default:
-                System.out.println("Unknown command, type 'help' for list over commands");
+                System.out.println("Unknown methodname parsed");
         }
         return access;
     }
