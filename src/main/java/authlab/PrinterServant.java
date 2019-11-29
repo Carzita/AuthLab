@@ -52,6 +52,24 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
     }
 
     @Override
+    public void writeToLogFileFail(String methodName)throws IOException{
+        Timestamp timestampLog = new Timestamp(System.currentTimeMillis());
+        BufferedWriter buffLog = null;
+        try {
+            // true is set because we want to append data
+            FileWriter fileWriter = new FileWriter("log.txt", true);
+            buffLog = new BufferedWriter(fileWriter);
+            buffLog.append("\r\n" + "Failed access attempt: " + timestampLog + "," + logUserName +"," + methodName);
+        } catch (IOException e) {
+            System.err.println("Error with writeToLogFile: " + e.getMessage());
+        } finally {
+            if (buffLog != null) {
+                buffLog.close();
+            }
+        }
+    }
+
+    @Override
     public String print(String filename, String printer) throws IOException {
         writeToLogFile(Thread.currentThread().getStackTrace()[1].getMethodName());
         if (running) {
@@ -236,6 +254,10 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
             default:
                 System.out.println("Unknown command, type 'help' for list over commands");
         }
+        // logging failed access attempt
+        if(match==0) {
+            writeToLogFileFail(methodName);
+        }
         return match == 1;
     }
 
@@ -282,9 +304,10 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
             }
         }
         fileReader.close();
+        bufReader.close();
         if(match==1){
             boolean privilege = false;
-            // getting line of role privileges to be checked in getMatchRBAC method
+            // getting line of role privileges to be checked in getPrivilegeRBAC method
             switch(role) {
                 case "manager":
                     String managerAccess = Files.readAllLines(Paths.get("RBAC/access.txt")).get(0);
@@ -348,6 +371,10 @@ public class PrinterServant extends UnicastRemoteObject implements PrinterInterf
                 break;
             default:
                 System.out.println("Unknown methodname parsed");
+        }
+        if(!access) {
+            // logging failed access attempt
+            writeToLogFileFail(methodName);
         }
         return access;
     }

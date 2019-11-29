@@ -23,6 +23,7 @@ public interface PrinterInterface extends Remote {
     public byte[] convertAttemptedPassword (String password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException, RemoteException;
     public int login (byte[] username, byte[] attemptedPassword) throws RemoteException, FileNotFoundException;
     public void writeToLogFile(String methodName) throws IOException;
+    public void writeToLogFileFail(String methodName) throws IOException;
     public boolean checkAccessACL(String methodName) throws IOException;
     public boolean checkAccessRBAC(String methodName) throws IOException;
 }

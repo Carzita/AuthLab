@@ -63,7 +63,7 @@ public class Client
                         break;
                     case "print":
                         if(service.checkAccessACL("print")) {
-//                    if(service.checkRBAC("print")) {
+//                    if(service.checkAccessRBAC("print")) {
                             System.out.println("Enter filename");
                             filename = myScanner.nextLine();
                             System.out.println("Enter printer");
@@ -74,7 +74,7 @@ public class Client
                         }
                         break;
                     case "queue":
-//                        if(service.checkACL("queue")) {
+//                        if(service.checkAccessACL("queue")) {
                     if(service.checkAccessRBAC("queue")) {
                             System.out.println("<Job number> <File name>");
                             service.queue().forEach(System.out::println);
@@ -83,7 +83,7 @@ public class Client
                         }
                         break;
                     case "topqueue":
-//                        if(service.checkACL("topqueue")) {
+//                        if(service.checkAccessACL("topqueue")) {
                     if(service.checkAccessRBAC("topqueue")) {
                             System.out.println("Enter job you want to be moved to top of the queue");
                             if (myScanner.hasNextInt()) {
@@ -101,7 +101,7 @@ public class Client
                         }
                         break;
                     case "start":
-//                        if(service.checkACL("start")) {
+//                        if(service.checkAccessACL("start")) {
                     if(service.checkAccessRBAC("start")) {
                             System.out.println(service.start());
                         } else {
@@ -109,7 +109,7 @@ public class Client
                         }
                         break;
                     case "stop":
-//                        if(service.checkACL("stop")) {
+//                        if(service.checkAccessACL("stop")) {
                     if(service.checkAccessRBAC("stop")) {
                             System.out.println(service.stop());
                         } else {
@@ -117,7 +117,7 @@ public class Client
                         }
                         break;
                     case "restart":
-//                        if(service.checkACL("restart")) {
+//                        if(service.checkAccessACL("restart")) {
                     if(service.checkAccessRBAC("restart")) {
                             System.out.println(service.restart());
                         } else {
@@ -125,7 +125,7 @@ public class Client
                         }
                         break;
                     case "status":
-//                        if(service.checkACL("status")) {
+//                        if(service.checkAccessACL("status")) {
                     if(service.checkAccessRBAC("status")) {
                             System.out.println(service.status());
                         } else {
@@ -133,7 +133,7 @@ public class Client
                         }
                         break;
                     case "readconfig":
-//                        if(service.checkACL("readconfig")) {
+//                        if(service.checkAccessACL("readconfig")) {
                     if(service.checkAccessRBAC("readconfig")) {
                             System.out.println("Enter parameter");
                             System.out.println(service.readConfig(myScanner.nextLine()));
@@ -142,7 +142,7 @@ public class Client
                         }
                         break;
                     case "setconfig":
-//                        if(service.checkACL("setconfig")) {
+//                        if(service.checkAccessACL("setconfig")) {
                     if(service.checkAccessRBAC("setconfig")) {
                             System.out.println("Enter parameter");
                             String parameterSetC = myScanner.nextLine();
